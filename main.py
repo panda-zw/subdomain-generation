@@ -1,5 +1,7 @@
 # main.py
-from fastapi import FastAPI, HTTPException, Depends
+import uvicorn
+from fastapi import FastAPI, HTTPException
+from starlette.middleware.cors import CORSMiddleware
 
 from middleware import extract_subdomain_middleware
 from models import OrganizationRequest
@@ -9,6 +11,14 @@ from database import db
 app = FastAPI()
 
 app.middleware("http")(extract_subdomain_middleware)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/create-organization")
 async def create_organization(request: OrganizationRequest):
@@ -25,3 +35,8 @@ async def create_organization(request: OrganizationRequest):
     await db.organizations.insert_one(new_org)
 
     return {"message": "Organization created successfully", "subdomain": subdomain}
+
+
+if __name__ == "__main__":
+    # uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, ws_ping_interval=300, ws_ping_timeout=300, reload=True)
