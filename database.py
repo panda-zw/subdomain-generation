@@ -1,14 +1,15 @@
 from dotenv import load_dotenv
 import os
-from redis.asyncio import Redis
-
+from upstash_redis import Redis
 
 load_dotenv()  # Load environment variables from a .env.local file
 
 # Get the Redis URL from environment variables
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+UPSTASH_REDIS_URL = os.getenv("UPSTASH_REDIS_URL")
+UPSTASH_REDIS_TOKEN = os.getenv("UPSTASH_REDIS_TOKEN")
+
 # Initialize the Redis connection pool
-redis = Redis.from_url(REDIS_URL, decode_responses=True)
+redis = Redis(url=UPSTASH_REDIS_URL, token=UPSTASH_REDIS_TOKEN)
 
 
 async def get_redis() -> Redis:
@@ -17,9 +18,9 @@ async def get_redis() -> Redis:
 
 async def is_subdomain_valid(subdomain: str) -> bool:
     # Check if the subdomain exists in the Redis Set
-    return await redis.sismember("valid_subdomains", subdomain)
+    return redis.sismember("valid_subdomains", subdomain)
 
 async def add_subdomain(subdomain: str):
     # Add subdomain to the Redis Set
-    await redis.sadd("valid_subdomains", subdomain)
+    redis.sadd("valid_subdomains", subdomain)
 
