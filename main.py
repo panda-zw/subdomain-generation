@@ -5,7 +5,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from middleware import extract_subdomain_middleware
 from models import OrganizationRequest
-from utils import is_subdomain_available_in_db, generate_subdomain
+from utils import generate_subdomain
 from database import is_subdomain_valid, add_subdomain
 
 app = FastAPI()
