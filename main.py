@@ -5,8 +5,8 @@ from starlette.middleware.cors import CORSMiddleware
 
 from middleware import extract_subdomain_middleware
 from models import OrganizationRequest
-from utils import is_subdomain_available, generate_subdomain
-from database import db
+from utils import is_subdomain_available_in_db, generate_subdomain
+from database import is_subdomain_valid, add_subdomain
 
 app = FastAPI()
 
@@ -25,14 +25,12 @@ async def create_organization(request: OrganizationRequest):
     # Generate the subdomain based on the organization name
     subdomain = await generate_subdomain(request.name)
 
-    # Check if the subdomain is already in use
-    is_available = await is_subdomain_available(subdomain)
-    if not is_available:
-        raise HTTPException(status_code=400, detail="Subdomain is already in use.")
+    # Check if subdomain already exists
+    if await is_subdomain_valid(subdomain):
+        raise HTTPException(status_code=400, detail="Subdomain already exists.")
 
-    # Insert the new organization document
-    new_org = {"name": request.name, "subdomain": subdomain}
-    await db.organizations.insert_one(new_org)
+    # Add the subdomain to the Redis cache
+    await add_subdomain(subdomain)
 
     return {"message": "Organization created successfully", "subdomain": subdomain}
 

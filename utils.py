@@ -1,7 +1,7 @@
 # utils.py
 from database import db
 
-async def is_subdomain_available(subdomain: str) -> bool:
+async def is_subdomain_available_in_db(subdomain: str) -> bool:
     """
     Checks if the given subdomain is already in use.
     """
